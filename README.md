@@ -1,0 +1,2 @@
+# DigiKatApplication
+Movie Categorization Application
