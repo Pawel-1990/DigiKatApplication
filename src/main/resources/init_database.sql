@@ -1,15 +1,15 @@
 DO '
 BEGIN
     IF NOT EXISTS(SELECT 1 FROM pg_type WHERE typname = ''production_type'') THEN
-        CREATE TYPE production_type AS ENUM(''POLISH_PISF'', ''POLISH'', ''FOREIGN'');
+        CREATE TYPE production_type AS ENUM(''POLISH_PISF'', ''POLISH_OTHER'', ''FOREIGN'');
     END IF;
     IF NOT EXISTS(SELECT 1 FROM pg_type WHERE typname = ''availability_type'') THEN
-        CREATE TYPE availability_type AS ENUM (''Netflix'', ''Youtube'', ''Disney'', ''HBO'');
+        CREATE TYPE availability_type AS ENUM (''NETFLIX'', ''YOUTUBE'', ''DISNEY'', ''HBO'');
     END IF;
     IF NOT EXISTS(SELECT 1 FROM pg_type WHERE typname = ''rating_type'') THEN
         CREATE TYPE rating_type AS ENUM (''AVERAGE'', ''GOOD'', ''OUTSTANDING'');
         END IF;
-    CREATE TABLE IF NOT EXISTS film (
+    CREATE TABLE IF NOT EXISTS films (
                                         id SERIAL PRIMARY KEY,
                                         title VARCHAR(300) NOT NULL,
                                         director VARCHAR(100) NOT NULL,
@@ -17,7 +17,113 @@ BEGIN
                                         production production_type NOT NULL,
                                         availability availability_type[] NOT NULL,
                                         last_update DATE NOT NULL,
-                                        user_rating rating_type NOT NULL
+                                        user_rating rating_type NOT NULL,
+                                        ranking INTEGER,
+                                        size INTEGER NOT NULL
     );
+    IF (SELECT COUNT(*) FROM films) = 0 THEN
+        INSERT INTO films (id, title, director, year, production, availability, last_update, user_rating, size) VALUES
+            (1, ''Incepcja'', ''Christopher Nolan'', 2010, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''DISNEY''::availability_type], ''2023-05-15'', ''GOOD'', 750),
+            (2, ''Pociąg do Hollywood'', ''Jerzy Kawalerowicz'', 1980, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type, ''HBO''::availability_type], ''2018-03-10'', ''AVERAGE'', 300),
+            (3, ''The Godfather'', ''Francis Ford Coppola'', 1972, ''FOREIGN'', ARRAY [''HBO''::availability_type], ''2021-09-22'', ''OUTSTANDING'', 600),
+            (4, ''Miasto 44'', ''Jan Komasa'', 2014, ''POLISH_OTHER'', ARRAY [''YOUTUBE''::availability_type], ''2020-07-01'', ''GOOD'', 450),
+            (5, ''Schindlers List'', ''Steven Spielberg'', 1993, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''DISNEY''::availability_type], ''2019-12-05'', ''OUTSTANDING'', 800),
+            (6, ''Człowiek z marmuru'', ''Andrzej Wajda'', 1977, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2022-04-18'', ''AVERAGE'', 200),
+            (7, ''Titanic'', ''James Cameron'', 1997, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''HBO''::availability_type], ''2024-01-30'', ''GOOD'', 900),
+            (8, ''Rejs'', ''Marek Piwowski'', 1970, ''POLISH_OTHER'', ARRAY [''YOUTUBE''::availability_type, ''NETFLIX''::availability_type], ''2017-06-12'', ''AVERAGE'', 150),
+            (9, ''The Dark Knight'', ''Christopher Nolan'', 2008, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type], ''2023-11-03'', ''OUTSTANDING'', 700),
+            (10, ''Ida'', ''Paweł Pawlikowski'', 2013, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type, ''HBO''::availability_type], ''2021-08-25'', ''GOOD'', 350),
+            (11, ''Forrest Gump'', ''Robert Zemeckis'', 1994, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2020-02-14'', ''AVERAGE'', 650),
+            (12, ''Chłopcy z placu broni'', ''Jerzy Gruza'', 1967, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type, ''HBO''::availability_type], ''2016-09-09'', ''GOOD'', 250),
+            (13, ''The Shawshank Redemption'', ''Frank Darabont'', 1994, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''HBO''::availability_type], ''2022-06-20'', ''OUTSTANDING'', 550),
+            (14, ''Królik po berlińsku'', ''Marek Koterski'', 1984, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type], ''2019-03-17'', ''AVERAGE'', 180),
+            (15, ''The Lord of the Rings: The Fellowship of the Ring'', ''Peter Jackson'', 2001, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''NETFLIX''::availability_type], ''2023-07-07'', ''GOOD'', 850),
+            (16, ''Rejs'', ''Marek Piwowski'', 1970, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type, ''DISNEY''::availability_type], ''2021-10-11'', ''AVERAGE'', 160),
+            (17, ''Pulp Fiction'', ''Quentin Tarantino'', 1994, ''FOREIGN'', ARRAY [''HBO''::availability_type], ''2020-05-03'', ''OUTSTANDING'', 700),
+            (18, ''Krótki film o miłości'', ''Janusz Zaorski'', 1988, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type, ''YOUTUBE''::availability_type], ''2018-12-22'', ''GOOD'', 300),
+            (19, ''The Silence of the Lambs'', ''Jonathan Demme'', 1991, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type], ''2022-04-09'', ''AVERAGE'', 400),
+            (20, ''Przesłuchanie'', ''Ryszard Bugajski'', 1982, ''POLISH_OTHER'', ARRAY [''DISNEY''::availability_type, ''HBO''::availability_type], ''2017-08-15'', ''GOOD'', 220),
+            (21, ''The Grand Budapest Hotel'', ''Wes Anderson'', 2014, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''YOUTUBE''::availability_type], ''2023-02-28'', ''OUTSTANDING'', 600),
+            (22, ''Człowiek z marmuru'', ''Andrzej Wajda'', 1977, ''POLISH_PISF'', ARRAY [''HBO''::availability_type], ''2021-06-14'', ''AVERAGE'', 190),
+            (23, ''The Social Network'', ''David Fincher'', 2010, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''DISNEY''::availability_type], ''2020-11-19'', ''GOOD'', 500),
+            (24, ''Seksmisja'', ''Juliusz Machulski'', 1984, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type], ''2022-09-05'', ''OUTSTANDING'', 280),
+            (25, ''Gladiator'', ''Ridley Scott'', 2000, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2019-03-30'', ''GOOD'', 750),
+            (26, ''Miś'', ''Stanisław Bareja'', 1981, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type, ''HBO''::availability_type], ''2021-07-22'', ''AVERAGE'', 230),
+            (27, ''The Revenant'', ''Alejandro González Iñárritu'', 2015, ''FOREIGN'', ARRAY [''HBO''::availability_type, ''YOUTUBE''::availability_type], ''2023-12-10'', ''GOOD'', 900),
+            (28, ''Dzień świra'', ''Marek Koterski'', 2002, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type], ''2020-04-17'', ''OUTSTANDING'', 320),
+            (29, ''The Irishman'', ''Martin Scorsese'', 2019, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''NETFLIX''::availability_type], ''2022-08-03'', ''AVERAGE'', 950),
+            (30, ''Ziemia obiecana'', ''Andrzej Wajda'', 1975, ''POLISH_PISF'', ARRAY [''HBO''::availability_type], ''2018-10-25'', ''GOOD'', 400),
+            (31, ''Mad Max: Fury Road'', ''George Miller'', 2015, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''YOUTUBE''::availability_type], ''2023-06-15'', ''OUTSTANDING'', 700),
+            (32, ''Lalka'', ''Jerzy Kawalerowicz'', 1977, ''POLISH_OTHER'', ARRAY [''DISNEY''::availability_type], ''2021-01-09'', ''AVERAGE'', 270),
+            (33, ''Blade Runner'', ''Ridley Scott'', 1982, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''YOUTUBE''::availability_type], ''2020-07-20'', ''GOOD'', 600),
+            (34, ''Kogel-mogel'', ''Roman Załuski'', 1988, ''POLISH_PISF'', ARRAY [''DISNEY''::availability_type], ''2022-03-12'', ''OUTSTANDING'', 180),
+            (35, ''The Big Lebowski'', ''Joel Coen'', 1998, ''FOREIGN'', ARRAY [''HBO''::availability_type, ''NETFLIX''::availability_type], ''2019-11-30'', ''AVERAGE'', 450),
+            (36, ''Człowiek z marmuru'', ''Andrzej Wajda'', 1977, ''POLISH_PISF'', ARRAY [''HBO''::availability_type, ''NETFLIX''::availability_type], ''2023-05-18'', ''GOOD'', 200),
+            (37, ''Parasite'', ''Bong Joon-ho'', 2019, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2021-09-14'', ''OUTSTANDING'', 650),
+            (38, ''Miasto 44'', ''Jan Komasa'', 2014, ''POLISH_OTHER'', ARRAY [''DISNEY''::availability_type, ''HBO''::availability_type], ''2020-02-28'', ''AVERAGE'', 470),
+            (39, ''Goodfellas'', ''Martin Scorsese'', 1990, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''HBO''::availability_type], ''2022-10-07'', ''GOOD'', 800),
+            (40, ''Rejs'', ''Marek Piwowski'', 1970, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2018-06-03'', ''OUTSTANDING'', 170),
+            (41, ''The Truman Show'', ''Peter Weir'', 1998, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type, ''DISNEY''::availability_type], ''2021-04-19'', ''AVERAGE'', 500),
+            (42, ''Seksmisja'', ''Juliusz Machulski'', 1984, ''POLISH_OTHER'', ARRAY [''YOUTUBE''::availability_type, ''DISNEY''::availability_type], ''2023-08-22'', ''GOOD'', 290),
+            (43, ''Avatar'', ''James Cameron'', 2009, ''FOREIGN'', ARRAY [''HBO''::availability_type], ''2020-12-15'', ''OUTSTANDING'', 950),
+            (44, ''Wesele'', ''Andrzej Wajda'', 1972, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type, ''YOUTUBE''::availability_type], ''2019-07-10'', ''AVERAGE'', 210),
+            (45, ''The Prestige'', ''Christopher Nolan'', 2006, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''DISNEY''::availability_type], ''2022-03-25'', ''GOOD'', 600),
+            (46, ''Dzień świra'', ''Marek Koterski'', 2002, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2021-11-08'', ''OUTSTANDING'', 330),
+            (47, ''The Kings Speech'', ''Tom Hooper'', 2010, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type, ''NETFLIX''::availability_type], ''2023-01-14'', ''AVERAGE'', 400),
+            (48, ''Cicha noc'', ''Piotr Domalewski'', 2017, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type], ''2020-06-30'', ''GOOD'', 280),
+            (49, ''The Departed'', ''Martin Scorsese'', 2006, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type, ''HBO''::availability_type], ''2022-09-17'', ''OUTSTANDING'', 700),
+            (50, ''Sami swoi'', ''Sylwester Chęciński'', 1967, ''POLISH_OTHER'', ARRAY [''DISNEY''::availability_type, ''YOUTUBE''::availability_type], ''2018-04-05'', ''AVERAGE'', 150),
+            (51, ''Interstellar'', ''Christopher Nolan'', 2014, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type], ''2023-03-20'', ''GOOD'', 800),
+            (52, ''Pan Tadeusz'', ''Andrzej Wajda'', 1999, ''POLISH_PISF'', ARRAY [''HBO''::availability_type, ''DISNEY''::availability_type], ''2020-10-15'', ''AVERAGE'', 400),
+            (53, ''Fight Club'', ''David Fincher'', 1999, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2021-06-10'', ''OUTSTANDING'', 600),
+            (54, ''Zimna wojna'', ''Paweł Pawlikowski'', 2018, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type], ''2022-08-05'', ''GOOD'', 350),
+            (55, ''The Matrix'', ''Wachowski Sisters'', 1999, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''HBO''::availability_type], ''2019-11-22'', ''AVERAGE'', 700),
+            (56, ''Katyń'', ''Andrzej Wajda'', 2007, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type], ''2023-04-18'', ''GOOD'', 450),
+            (57, ''Saving Private Ryan'', ''Steven Spielberg'', 1998, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type], ''2020-07-30'', ''OUTSTANDING'', 850),
+            (58, ''Hydrozagadka'', ''Andrzej Kondratiuk'', 1970, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2018-09-12'', ''AVERAGE'', 200),
+            (59, ''Inglourious Basterds'', ''Quentin Tarantino'', 2009, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2022-01-15'', ''GOOD'', 650),
+            (60, ''Korczak'', ''Andrzej Wajda'', 1990, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type, ''NETFLIX''::availability_type], ''2021-03-25'', ''OUTSTANDING'', 300),
+            (61, ''The Lion King'', ''Roger Allers'', 1994, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type], ''2023-06-20'', ''GOOD'', 500),
+            (62, ''Vabank'', ''Juliusz Machulski'', 1981, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2019-12-10'', ''AVERAGE'', 250),
+            (63, ''Jurassic Park'', ''Steven Spielberg'', 1993, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''YOUTUBE''::availability_type], ''2020-08-18'', ''OUTSTANDING'', 700),
+            (64, ''Dekalog'', ''Krzysztof Kieślowski'', 1989, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2022-02-14'', ''GOOD'', 600),
+            (65, ''The Avengers'', ''Joss Whedon'', 2012, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2021-10-05'', ''AVERAGE'', 800),
+            (66, ''Alternatywy 4'', ''Stanisław Bareja'', 1983, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2023-07-22'', ''GOOD'', 400),
+            (67, ''Django Unchained'', ''Quentin Tarantino'', 2012, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2020-04-30'', ''OUTSTANDING'', 750),
+            (68, ''Popiół i diament'', ''Andrzej Wajda'', 1958, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type, ''YOUTUBE''::availability_type], ''2019-06-15'', ''AVERAGE'', 350),
+            (69, ''The Dark Knight Rises'', ''Christopher Nolan'', 2012, ''FOREIGN'', ARRAY [''HBO''::availability_type], ''2022-09-10'', ''GOOD'', 900),
+            (70, ''Kiler'', ''Juliusz Machulski'', 1997, ''POLISH_OTHER'', ARRAY [''DISNEY''::availability_type], ''2021-01-20'', ''OUTSTANDING'', 300),
+            (71, ''The Pianist'', ''Roman Polański'', 2002, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2023-03-05'', ''GOOD'', 650),
+            (72, ''Star Wars: Episode IV'', ''George Lucas'', 1977, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type, ''HBO''::availability_type], ''2020-11-12'', ''AVERAGE'', 700),
+            (73, ''Barwy ochronne'', ''Krzysztof Zanussi'', 1977, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type], ''2022-05-18'', ''GOOD'', 450),
+            (74, ''Inception'', ''Christopher Nolan'', 2010, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2021-08-25'', ''OUTSTANDING'', 800),
+            (75, ''Psy'', ''Władysław Pasikowski'', 1992, ''POLISH_PISF'', ARRAY [''HBO''::availability_type], ''2023-10-30'', ''AVERAGE'', 350),
+            (76, ''The Terminator'', ''James Cameron'', 1984, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2020-03-15'', ''GOOD'', 600),
+            (77, ''Krzyżacy'', ''Aleksander Ford'', 1960, ''POLISH_OTHER'', ARRAY [''NETFLIX''::availability_type], ''2022-07-10'', ''OUTSTANDING'', 500),
+            (78, ''The Wolf of Wall Street'', ''Martin Scorsese'', 2013, ''FOREIGN'', ARRAY [''DISNEY''::availability_type, ''HBO''::availability_type], ''2019-12-20'', ''GOOD'', 900),
+            (79, ''Sami'', ''Sylwester Chęciński'', 2006, ''POLISH_PISF'', ARRAY [''YOUTUBE''::availability_type], ''2021-04-05'', ''AVERAGE'', 400),
+            (80, ''Back to the Future'', ''Robert Zemeckis'', 1985, ''FOREIGN'', ARRAY [''NETFLIX''::availability_type], ''2023-02-28'', ''GOOD'', 650),
+            (81, ''Jak rozpętałem drugą wojnę światową'', ''Tadeusz Chmielewski'', 1969, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2020-06-12'', ''OUTSTANDING'', 300),
+            (82, ''The Green Mile'', ''Frank Darabont'', 1999, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2022-09-15'', ''AVERAGE'', 700),
+            (83, ''Quo Vadis'', ''Jerzy Kawalerowicz'', 2001, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2021-11-20'', ''GOOD'', 850),
+            (84, ''Alien'', ''Ridley Scott'', 1979, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2023-05-10'', ''OUTSTANDING'', 600),
+            (85, ''Róża'', ''Wojciech Smarzowski'', 2011, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2020-08-25'', ''GOOD'', 450),
+            (86, ''The Empire Strikes Back'', ''Irvin Kershner'', 1980, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2022-03-18'', ''AVERAGE'', 700),
+            (87, ''Dom zły'', ''Wojciech Smarzowski'', 2009, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2021-10-05'', ''GOOD'', 400),
+            (88, ''Jaws'', ''Steven Spielberg'', 1975, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2023-07-20'', ''OUTSTANDING'', 550),
+            (89, ''Nie lubię poniedziałku'', ''Tadeusz Chmielewski'', 1971, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2020-04-30'', ''AVERAGE'', 300),
+            (90, ''The Shining'', ''Stanley Kubrick'', 1980, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2022-06-15'', ''GOOD'', 600),
+            (91, ''Ogniem i mieczem'', ''Jerzy Hoffman'', 1999, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2021-03-10'', ''OUTSTANDING'', 800),
+            (92, ''Raiders of the Lost Ark'', ''Steven Spielberg'', 1981, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2023-01-25'', ''GOOD'', 650),
+            (93, ''Kroll'', ''Władysław Pasikowski'', 1991, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2020-09-20'', ''AVERAGE'', 400),
+            (94, ''The Exorcist'', ''William Friedkin'', 1973, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2022-11-05'', ''GOOD'', 700),
+            (95, ''Wołyń'', ''Wojciech Smarzowski'', 2016, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2021-06-30'', ''OUTSTANDING'', 900),
+            (96, ''E.T. the Extra-Terrestrial'', ''Steven Spielberg'', 1982, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type], ''2023-04-15'', ''AVERAGE'', 500),
+            (97, ''Co mi zrobisz, jak mnie złapiesz'', ''Stanisław Bareja'', 1978, ''POLISH_OTHER'', ARRAY [''HBO''::availability_type], ''2020-12-10'', ''GOOD'', 350),
+            (98, ''The Godfather Part II'', ''Francis Ford Coppola'', 1974, ''FOREIGN'', ARRAY [''DISNEY''::availability_type], ''2022-08-20'', ''OUTSTANDING'', 800),
+            (99, ''Królewna Śnieżka'', ''Walerian Borowczyk'', 1984, ''POLISH_PISF'', ARRAY [''NETFLIX''::availability_type], ''2021-07-15'', ''GOOD'', 600),
+            (100, ''Braveheart'', ''Mel Gibson'', 1995, ''FOREIGN'', ARRAY [''YOUTUBE''::availability_type, ''HBO''::availability_type], ''2023-09-30'', ''AVERAGE'', 750);
+    END IF;
 END ';
+
 
