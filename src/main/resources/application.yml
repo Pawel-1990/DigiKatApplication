@@ -1,11 +1,13 @@
 spring:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:init_database.sql
   datasource:
     url: jdbc:postgresql://localhost:5432/digikatdb
     username: postgres
     password: admin
   jpa:
-    hibernate:
-      ddl-auto: update
     database: postgresql
 server:
   port: 8090
