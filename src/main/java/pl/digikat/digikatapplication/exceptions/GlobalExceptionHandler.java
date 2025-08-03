@@ -18,7 +18,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleMissingParams(MissingServletRequestParameterException ex) {
         Map<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", "Missing required parameter: " + ex.getParameterName());
-        log.warn(String.format("Required request parameter %s for method parameter type int is not present", ex.getParameterName()));
+        log.warn("Required request parameter {} for method parameter type int is not present", ex.getParameterName());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> handleValidationError(ValidationException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Validation error: " + ex.getMessage());
+        log.warn("Validation error: {}", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }
